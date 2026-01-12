@@ -33,11 +33,38 @@
             margin: 0 auto;
         }
 
+        .lang-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .lang-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        }
+
+        .lang-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
         header {
             text-align: center;
             margin-bottom: 3rem;
             padding-bottom: 2rem;
             border-bottom: 2px solid var(--border);
+            position: relative;
         }
 
         h1 {
@@ -50,6 +77,53 @@
         .subtitle {
             color: #64748b;
             font-size: 1.1rem;
+        }
+
+        .sentence-generator {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 3rem;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .sentence-generator h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .generated-sentence {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 1.5rem 0;
+            min-height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .generate-btn {
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.2s;
+            margin-top: 1rem;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .group-section {
@@ -156,9 +230,51 @@
             font-weight: 500;
         }
 
+        .transformation-example {
+            background: #f0f9ff;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+            border-left: 4px solid var(--primary);
+        }
+
+        .transformation-example strong {
+            color: var(--primary);
+        }
+
+        .verb-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .verb-spanish {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .verb-meaning {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 1rem;
+            }
+
+            .lang-switcher {
+                top: 10px;
+                right: 10px;
+            }
+
+            .lang-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
             }
 
             h1 {
@@ -178,39 +294,130 @@
                 font-size: 0.9rem;
                 padding: 0.6rem 0.8rem;
             }
+
+            .generated-sentence {
+                font-size: 1.4rem;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="lang-switcher">
+        <button class="lang-btn" id="langToggle">EN</button>
+    </div>
+
     <div class="container">
         <header>
-            <h1>Vocabulario de Palabras Convertibles</h1>
-            <p class="subtitle">Palabras en español con su equivalente en inglés • Pasa el cursor sobre cada palabra</p>
+            <h1 data-es="Vocabulario de Palabras Convertibles" data-en="Convertible Words Vocabulary">Vocabulario de Palabras Convertibles</h1>
+            <p class="subtitle" data-es="Palabras en español con su equivalente en inglés • Pasa el cursor sobre cada palabra" data-en="Spanish words with their English equivalent • Hover over each word">Palabras en español con su equivalente en inglés • Pasa el cursor sobre cada palabra</p>
         </header>
+
+        <!-- Random Sentence Generator -->
+        <div class="sentence-generator">
+            <h2 data-es="Generador de Oraciones Aleatorias" data-en="Random Sentence Generator">Generador de Oraciones Aleatorias</h2>
+            <div class="generated-sentence" id="generatedSentence">
+                <span data-es="Haz clic en el botón para generar una oración" data-en="Click the button to generate a sentence">Haz clic en el botón para generar una oración</span>
+            </div>
+            <button class="generate-btn" id="generateBtn" data-es="Generar Nueva Oración" data-en="Generate New Sentence">Generar Nueva Oración</button>
+        </div>
 
         <div id="vocabulary-container"></div>
     </div>
 
     <script>
+        // Language state
+        let currentLang = 'es';
+
+        // Translations
+        const translations = {
+            es: {
+                wordCount: "palabras",
+                generateSentence: "Generar Nueva Oración",
+                clickToGenerate: "Haz clic en el botón para generar una oración"
+            },
+            en: {
+                wordCount: "words",
+                generateSentence: "Generate New Sentence",
+                clickToGenerate: "Click the button to generate a sentence"
+            }
+        };
+
+        // Common verbs
+        const commonVerbs = [
+            { spanish: "querer", english: "to want" },
+            { spanish: "necesitar", english: "to need" },
+            { spanish: "poder", english: "to be able to / can" },
+            { spanish: "deber", english: "to must / should" },
+            { spanish: "hacer", english: "to do / to make" },
+            { spanish: "ir", english: "to go" },
+            { spanish: "venir", english: "to come" },
+            { spanish: "estar", english: "to be (temporary)" },
+            { spanish: "ser", english: "to be (permanent)" },
+            { spanish: "tener", english: "to have" },
+            { spanish: "decir", english: "to say / to tell" },
+            { spanish: "hablar", english: "to speak" },
+            { spanish: "ver", english: "to see" },
+            { spanish: "saber", english: "to know (facts)" },
+            { spanish: "conocer", english: "to know (people/places)" },
+            { spanish: "dar", english: "to give" },
+            { spanish: "tomar", english: "to take / to drink" },
+            { spanish: "comer", english: "to eat" },
+            { spanish: "beber", english: "to drink" },
+            { spanish: "dormir", english: "to sleep" },
+            { spanish: "estudiar", english: "to study" },
+            { spanish: "trabajar", english: "to work" },
+            { spanish: "aprender", english: "to learn" },
+            { spanish: "enseñar", english: "to teach" },
+            { spanish: "entender", english: "to understand" },
+            { spanish: "pensar", english: "to think" },
+            { spanish: "creer", english: "to believe" },
+            { spanish: "sentir", english: "to feel" },
+            { spanish: "vivir", english: "to live" },
+            { spanish: "amar", english: "to love" }
+        ];
+
+        // Sentence templates
+        const sentenceTemplates = [
+            { es: "Quiero {verb} {noun}.", en: "I want to {verb} {noun}." },
+            { es: "Necesito {verb} {noun}.", en: "I need to {verb} {noun}." },
+            { es: "Puedo {verb} {noun}.", en: "I can {verb} {noun}." },
+            { es: "Voy a {verb} {noun}.", en: "I'm going to {verb} {noun}." },
+            { es: "Me gusta {noun}.", en: "I like {noun}." },
+            { es: "Tengo {noun}.", en: "I have {noun}." },
+            { es: "Estoy {adj}.", en: "I am {adj}." },
+            { es: "Quiero estudiar {noun}.", en: "I want to study {noun}." },
+            { es: "Necesito aprender {noun}.", en: "I need to learn {noun}." },
+            { es: "Puedo hacer {noun}.", en: "I can do {noun}." }
+        ];
+
         // --- DATA ENGINE ---
         const databases = {
             exact: {
-                title: "Palabras Idénticas (-AL, -OR, -A)",
-                description: "Estas palabras se escriben exactamente igual en inglés/latín y español. La pronunciación difiere ligeramente.",
+                title: { es: "Palabras Idénticas (-AL, -OR, -A)", en: "Identical Words (-AL, -OR, -A)" },
+                description: { 
+                    es: "Estas palabras se escriben exactamente igual en inglés/latín y español. La pronunciación difiere ligeramente.",
+                    en: "These words are spelled exactly the same in English/Latin and Spanish. Pronunciation differs slightly."
+                },
                 roots: ["Actor", "Admin", "Agenda", "Alcohol", "Animal", "Area", "Arena", "Auto", "Banana", "Base", "Bar", "Cable", "Canal", "Cancer", "Capital", "Central", "Cereal", "Chance", "Chofer", "Club", "Collar", "Colon", "Color", "Coma", "Conclusion", "Conductor", "Confusion", "Control", "Coral", "Crime", "Crisis", "Criminal", "Cruel", "Cultural", "Debate", "Decision", "Dental", "Detector", "Digital", "Dimension", "Director", "Disco", "Division", "Doctor", "Drama", "Editor", "Editorial", "Electoral", "Element", "Error", "Excursion", "Experimental", "Explosion", "Expulsion", "Extension", "Exterior", "Extra", "Factor", "Fatal", "Federal", "Festival", "Final", "Flexible", "Formal", "Formula", "Fundamental", "Funeral", "Gas", "General", "Global", "Golf", "Horror", "Hospital", "Hotel", "Ideal", "Imperial", "Individual", "Industrial", "Informal", "Inspector", "Instructor", "Interior", "Invasion", "Legal", "Liberal", "Literal", "Local", "Manual", "Material", "Media", "Melon", "Menu", "Metal", "Moral", "Motor", "Musical", "Natural", "Naval", "Normal", "Original", "Panorama", "Particular", "Patio", "Personal", "Piano", "Plural", "Popular", "Principal", "Propaganda", "Protector", "Radical", "Radio", "Real", "Regional", "Regular", "Religion", "Revision", "Ritual", "Rival", "Rural", "Sector", "Sentimental", "Serial", "Sexual", "Simple", "Social", "Solar", "Solo", "Taxi", "Television", "Terror", "Total", "Traditional", "Tropical", "Tutor", "Universal", "Usual", "Vector", "Vertical", "Video", "Violin", "Virus", "Visual", "Vital", "Vocal", "Vulgar", "Yoga", "Zone"],
                 transform: (w) => w 
             },
             tion: {
-                title: "-CIÓN (de -TION)",
-                description: "Cambia la terminación '-tion' del inglés a '-ción' en español. Generalmente son sustantivos femeninos.",
+                title: { es: "-CIÓN (de -TION)", en: "-CIÓN (from -TION)" },
+                description: { 
+                    es: "Cambia la terminación '-tion' del inglés a '-ción' en español. Generalmente son sustantivos femeninos.",
+                    en: "Change English '-tion' ending to '-ción' in Spanish. Usually feminine nouns."
+                },
                 roots: ["Action", "Acceleration", "Accommodation", "Accumulation", "Accusation", "Adaptation", "Administration", "Admiration", "Adoption", "Affection", "Agitation", "Ambition", "Amplification", "Animation", "Anticipation", "Application", "Appreciation", "Association", "Attention", "Attraction", "Authorization", "Automation", "Aviation", "Calculation", "Cancellation", "Caption", "Celebration", "Circulation", "Civilization", "Classification", "Coagulation", "Collaboration", "Collection", "Combination", "Communication", "Competition", "Compilation", "Composition", "Concentration", "Condition", "Confirmation", "Congratulation", "Connection", "Conservation", "Consideration", "Constitution", "Construction", "Consultation", "Contamination", "Continuation", "Contradiction", "Contribution", "Conversation", "Cooperation", "Coordination", "Correction", "Corruption", "Creation", "Cultivation", "Declaration", "Decoration", "Dedication", "Definition", "Delegation", "Demonstration", "Description", "Destination", "Destruction", "Determination", "Devastation", "Deviation", "Dictation", "Direction", "Discretion", "Discrimination", "Discussion", "Distinction", "Distribution", "Donation", "Duration", "Education", "Election", "Elevation", "Elimination", "Emotion", "Evaluation", "Evaporation", "Evolution", "Exaggeration", "Examination", "Exception", "Exclamation", "Exhibition", "Expectation", "Expedition", "Expiration", "Explanation", "Exploration", "Explosion", "Exportation", "Expression", "Extinction", "Fabrication", "Fascination", "Federation", "Fermentation", "Fiction", "Formation", "Formulation", "Foundation", "Fraction", "Function", "Generation", "Graduation", "Gravitation", "Habitation", "Hesitation", "Humiliation", "Identification", "Illumination", "Illustration", "Imagination", "Imitation", "Immigration", "Implication", "Importation", "Impression", "Inauguration", "Inclination", "Indication", "Indignation", "Infection", "Inflation", "Information", "Inhibition", "Innovation", "Inoculation", "Inspiration", "Installation", "Institution", "Instruction", "Intention", "Interaction", "Interpretation", "Intervention", "Introduction", "Invention", "Investigation", "Invitation", "Irrigation", "Irritation", "Isolation", "Liberation", "Limitation", "Location", "Mediation", "Medication", "Meditation", "Migration", "Moderation", "Modernization", "Motivation", "Multiplication", "Mutation", "Narration", "Nation", "Navigation", "Negotiation", "Nomination", "Notification", "Nutrition", "Observation", "Occupation", "Operation", "Opposition", "Option", "Organization", "Orientation", "Participation", "Perfection", "Population", "Position", "Preparation", "Presentation", "Production", "Protection", "Qualification", "Reaction", "Reception", "Recommendation", "Reduction", "Relation", "Reputation", "Reservation", "Resolution", "Revolution", "Salvation", "Satisfaction", "Section", "Selection", "Sensation", "Situation", "Solution", "Station", "Suggestion", "Tradition", "Transaction", "Transportation", "Vacation", "Validation", "Variation", "Vegetation", "Vibration", "Violation"],
                 transform: (w) => {
                     return w.slice(0, -4) + "ción";
                 }
             },
             ic: {
-                title: "-ICO (de -IC)",
-                description: "Cambia la terminación '-ic' del inglés a '-ico' en español. A menudo requiere acento en la sílaba tónica (antepenúltima).",
+                title: { es: "-ICO (de -IC)", en: "-ICO (from -IC)" },
+                description: { 
+                    es: "Cambia la terminación '-ic' del inglés a '-ico' en español. A menudo requiere acento en la sílaba tónica (antepenúltima).",
+                    en: "Change English '-ic' ending to '-ico' in Spanish. Often requires accent on the stressed syllable (antepenultimate)."
+                },
                 roots: ["Academic", "Acrobatic", "Aerobic", "Alcoholic", "Allergic", "Analytic", "Antarctic", "Antibiotic", "Aquatic", "Arctic", "Artistic", "Athletic", "Atomic", "Authentic", "Automatic", "Basic", "Bureaucratic", "Catholic", "Characteristic", "Civic", "Classic", "Clinic", "Comic", "Cosmetic", "Critic", "Democratic", "Diplomatic", "Domestic", "Dramatic", "Dynamic", "Economic", "Electric", "Electronic", "Energetic", "Exotic", "Fantastic", "Generic", "Genetic", "Geographic", "Gigantic", "Graphic", "Historic", "Hydraulic", "Identical", "Ironical", "Logic", "Magic", "Magnetic", "Mechanic", "Medic", "Melodic", "Metallic", "Methodic", "Metric", "Music", "Mystic", "Narcotic", "Neurotic", "Oceanic", "Olympic", "Optic", "Organic", "Pacific", "Panic", "Pathetic", "Patriotic", "Philosophic", "Photographic", "Physical", "Plastic", "Poetic", "Political", "Practical", "Public", "Romantic", "Rustic", "Sarcastic", "Scientific", "Specific", "Static", "Strategic", "Sympathetic", "Synthetic", "Systematic", "Tactic", "Technical", "Titanic", "Toxic", "Traffic", "Tragic", "Tropical", "Typical", "Volcanic"],
                 transform: (w) => {
                     const accents = {
@@ -228,8 +435,11 @@
                 }
             },
             ty: {
-                title: "-DAD (de -TY)",
-                description: "Cambia la terminación '-ty' del inglés a '-dad' en español. (City -> Ciudad es una excepción). Válido para sustantivos abstractos.",
+                title: { es: "-DAD (de -TY)", en: "-DAD (from -TY)" },
+                description: { 
+                    es: "Cambia la terminación '-ty' del inglés a '-dad' en español. (City -> Ciudad es una excepción). Válido para sustantivos abstractos.",
+                    en: "Change English '-ty' ending to '-dad' in Spanish. (City -> Ciudad is an exception). Valid for abstract nouns."
+                },
                 roots: ["Activity", "Adversity", "Authority", "Brutality", "Capacity", "Captivity", "Cavity", "Celebrity", "Charity", "Clarity", "Community", "Complexity", "Creativity", "Curiosity", "Density", "Dignity", "Diversity", "Divinity", "Electricity", "Eternity", "Extremity", "Facility", "Fatality", "Fertility", "Fidelity", "Flexibility", "Formality", "Fragility", "Generosity", "Gravity", "Honesty", "Hospitality", "Hostility", "Humanity", "Humility", "Identity", "Immensity", "Immortality", "Immunity", "Integrity", "Intensity", "Liberty", "Majesty", "Maturity", "Mentality", "Minority", "Morality", "Mortality", "Nationality", "Necessity", "Obesity", "Opportunity", "Originality", "Personality", "Popularity", "Possibility", "Priority", "Privacy", "Prosperity", "Purity", "Quality", "Quantity", "Reality", "Regularity", "Responsibility", "Security", "Sensitivity", "Severity", "Simplicity", "Sincerity", "Solidarity", "Stability", "Stupidity", "Timidity", "Totality", "Tranquility", "Unity", "University", "Utility", "Validity", "Vanity", "Variety", "Velocity", "Vitality"],
                 transform: (w) => {
                     if(w.endsWith("ity")) return w.slice(0, -3) + "idad";
@@ -238,8 +448,11 @@
                 }
             },
             ous: {
-                title: "-OSO (de -OUS)",
-                description: "Cambia la terminación '-ous' del inglés a '-oso' en español. Significa 'lleno de' o 'que tiene la cualidad de'.",
+                title: { es: "-OSO (de -OUS)", en: "-OSO (from -OUS)" },
+                description: { 
+                    es: "Cambia la terminación '-ous' del inglés a '-oso' en español. Significa 'lleno de' o 'que tiene la cualidad de'.",
+                    en: "Change English '-ous' ending to '-oso' in Spanish. Means 'full of' or 'having the quality of'."
+                },
                 roots: ["Ambitious", "Anonymous", "Anxious", "Cautious", "Contagious", "Continuous", "Curious", "Delicious", "Delirious", "Disastrous", "Enormous", "Fabulous", "Famous", "Furious", "Generous", "Glorious", "Gracious", "Imperious", "Infectious", "Ingenious", "Jealous", "Luminous", "Malicious", "Marvelous", "Melodious", "Misterious", "Monstrous", "Nervous", "Numerous", "Nutritious", "Obvious", "Precious", "Prestigous", "Previous", "Prodigious", "Religious", "Rigorous", "Serious", "Spontaneous", "Studious", "Suspicious", "Tedious", "Various", "Victorious", "Vigorous", "Voluminous"],
                 transform: (w) => {
                     if(w.endsWith("ious")) return w.slice(0, -4) + "ioso"; 
@@ -248,10 +461,119 @@
             }
         };
 
-        // --- APP LOGIC ---
-        const container = document.getElementById('vocabulary-container');
+        // Get all Spanish words for sentence generation
+        function getAllSpanishWords() {
+            let allWords = [];
+            Object.keys(databases).forEach(key => {
+                databases[key].roots.forEach(root => {
+                    allWords.push(databases[key].transform(root));
+                });
+            });
+            return allWords;
+        }
 
-        function init() {
+        // Generate random sentence
+        function generateSentence() {
+            const allWords = getAllSpanishWords();
+            const templates = sentenceTemplates;
+            const template = templates[Math.floor(Math.random() * templates.length)];
+            
+            // Get random words
+            const randomNoun = allWords[Math.floor(Math.random() * allWords.length)];
+            const randomVerb = commonVerbs[Math.floor(Math.random() * commonVerbs.length)].spanish;
+            const randomAdj = allWords.filter(w => w.endsWith('o') || w.endsWith('a') || w.endsWith('ico') || w.endsWith('oso'))[Math.floor(Math.random() * 10)] || 'normal';
+            
+            let sentence = template[currentLang];
+            sentence = sentence.replace('{noun}', randomNoun);
+            sentence = sentence.replace('{verb}', randomVerb);
+            sentence = sentence.replace('{adj}', randomAdj);
+            
+            document.getElementById('generatedSentence').textContent = sentence;
+        }
+
+        // Language switching
+        function switchLanguage() {
+            currentLang = currentLang === 'es' ? 'en' : 'es';
+            document.getElementById('langToggle').textContent = currentLang === 'es' ? 'EN' : 'ES';
+            document.documentElement.lang = currentLang;
+            
+            // Update all elements with data attributes
+            document.querySelectorAll('[data-es], [data-en]').forEach(el => {
+                if (el.tagName === 'INPUT' || el.tagName === 'BUTTON') {
+                    el.textContent = el.getAttribute(`data-${currentLang}`);
+                } else {
+                    el.textContent = el.getAttribute(`data-${currentLang}`);
+                }
+            });
+            
+            // Re-render vocabulary
+            renderVocabulary();
+        }
+
+        // Render vocabulary sections
+        function renderVocabulary() {
+            const container = document.getElementById('vocabulary-container');
+            container.innerHTML = '';
+
+            // Add word transformations section
+            const transformationsSection = document.createElement('div');
+            transformationsSection.className = 'group-section';
+            transformationsSection.innerHTML = `
+                <div class="group-header">
+                    <h2 class="group-title">${currentLang === 'es' ? 'Transformaciones de Palabras' : 'Word Transformations'}</h2>
+                    <p class="group-description">${currentLang === 'es' 
+                        ? 'Aprende cómo crear nuevas palabras a partir de las palabras convertibles usando diferentes sufijos y transformaciones.' 
+                        : 'Learn how to create new words from convertible words using different suffixes and transformations.'}</p>
+                </div>
+                <div style="margin-top: 1.5rem;">
+                    <div class="transformation-example">
+                        <strong>${currentLang === 'es' ? '-MENTE (Adverbios):' : '-MENTE (Adverbs):'}</strong><br>
+                        ${currentLang === 'es' 
+                            ? 'Agrega "-mente" a un adjetivo para crear un adverbio. Ejemplo: normal → normalmente (normally), rápido → rápidamente (quickly), fácil → fácilmente (easily). Significa "in a ... way" o "in a ... manner".'
+                            : 'Add "-mente" to an adjective to create an adverb. Example: normal → normalmente (normally), rápido → rápidamente (quickly), fácil → fácilmente (easily). Means "in a ... way" or "in a ... manner".'}
+                    </div>
+                    <div class="transformation-example">
+                        <strong>${currentLang === 'es' ? '-AR / -ER / -IR (Verbos):' : '-AR / -ER / -IR (Verbs):'}</strong><br>
+                        ${currentLang === 'es' 
+                            ? 'Muchos sustantivos que terminan en "-ción" pueden convertirse en verbos cambiando a "-ar". Ejemplo: obligación → obligar (to obligate), educación → educar (to educate), información → informar (to inform).'
+                            : 'Many nouns ending in "-ción" can become verbs by changing to "-ar". Example: obligación → obligar (to obligate), educación → educar (to educate), información → informar (to inform).'}
+                    </div>
+                    <div class="transformation-example">
+                        <strong>${currentLang === 'es' ? 'Sustantivos de Adjetivos:' : 'Nouns from Adjectives:'}</strong><br>
+                        ${currentLang === 'es' 
+                            ? 'Algunos adjetivos pueden convertirse en sustantivos agregando "-dad" o "-idad". Ejemplo: real → realidad (reality), normal → normalidad (normality), especial → especialidad (specialty).'
+                            : 'Some adjectives can become nouns by adding "-dad" or "-idad". Example: real → realidad (reality), normal → normalidad (normality), especial → especialidad (specialty).'}
+                    </div>
+                </div>
+            `;
+            container.appendChild(transformationsSection);
+
+            // Add common verbs section
+            const verbsSection = document.createElement('div');
+            verbsSection.className = 'group-section';
+            const verbsList = document.createElement('div');
+            commonVerbs.forEach(verb => {
+                const verbItem = document.createElement('div');
+                verbItem.className = 'verb-item';
+                verbItem.innerHTML = `
+                    <span class="verb-spanish">${verb.spanish}</span>
+                    <span class="verb-meaning">${verb.english}</span>
+                `;
+                verbsList.appendChild(verbItem);
+            });
+            verbsSection.innerHTML = `
+                <div class="group-header">
+                    <h2 class="group-title">${currentLang === 'es' ? 'Verbos Más Usados' : 'Most Used Verbs'}</h2>
+                    <p class="group-description">${currentLang === 'es' 
+                        ? 'Lista de los verbos más comunes en español con sus significados en inglés.' 
+                        : 'List of the most common Spanish verbs with their English meanings.'}</p>
+                    <span class="word-count">${commonVerbs.length} ${currentLang === 'es' ? 'verbos' : 'verbs'}</span>
+                </div>
+            `;
+            verbsSection.appendChild(verbsList);
+            container.appendChild(verbsSection);
+
+            // Add vocabulary groups
             Object.keys(databases).forEach(key => {
                 const data = databases[key];
                 const words = data.roots.map(root => ({
@@ -259,7 +581,6 @@
                     english: root
                 }));
 
-                // Sort words alphabetically by Spanish
                 words.sort((a, b) => a.spanish.localeCompare(b.spanish, 'es'));
 
                 const section = document.createElement('div');
@@ -267,9 +588,9 @@
                 
                 section.innerHTML = `
                     <div class="group-header">
-                        <h2 class="group-title">${data.title}</h2>
-                        <p class="group-description">${data.description}</p>
-                        <span class="word-count">${words.length} palabras</span>
+                        <h2 class="group-title">${data.title[currentLang]}</h2>
+                        <p class="group-description">${data.description[currentLang]}</p>
+                        <span class="word-count">${words.length} ${translations[currentLang].wordCount}</span>
                     </div>
                     <div class="word-list"></div>
                 `;
@@ -288,8 +609,10 @@
             });
         }
 
-        // Start
-        init();
+        // Initialize
+        document.getElementById('langToggle').addEventListener('click', switchLanguage);
+        document.getElementById('generateBtn').addEventListener('click', generateSentence);
+        renderVocabulary();
     </script>
 </body>
 </html>
